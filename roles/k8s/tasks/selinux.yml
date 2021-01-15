@@ -1,0 +1,4 @@
+- name: Change SELinux
+  selinux:
+    state: "{{ SELinux | default('disabled') }}"
+  notify: Reboot host and wait for it to restart

@@ -1,0 +1,32 @@
+---               
+- user:
+    name: "{{ user_ssh['name'] }}"
+    comment: "{{ user_ssh['desc'] }}"
+    shell: /bin/bash
+    groups: "{{ user_ssh['group'] }}"
+    append: yes
+    generate_ssh_key: yes
+    password: "{{ user_ssh['password'] }}"
+    ssh_key_type: rsa
+              
+- authorized_key:
+    user: "{{ user_ssh['name'] }}"
+    state: present
+    manage_dir: yes
+    key: "{{ user_ssh['id_rsa_pub'] }}"
+
+- template:
+    src: ssh_setup.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    mode: '0600'
+    validate: /usr/sbin/sshd -t -f %s
+    backup: yes
+  notify: restart sshd
+
+- name: "Allow admin users to sudo without a password"
+  lineinfile:
+    dest: "/etc/sudoers" 
+    state: "present"
+    regexp: "^#%sudo"
+    line: "%sudo ALL=(ALL) NOPASSWD: ALL"
